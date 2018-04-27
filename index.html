@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="description" content="">
+<meta name="author" content="">
+<link rel="icon" href="public/img/favicon.ico">
+
+<title>Mon application CRUD</title>
+
+<!-- Bootstrap core CSS -->
+<link href="public/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Custom styles for this template -->
+<link href="public/css/starter-template.css" rel="stylesheet">
+<link rel="stylesheet"
+	href="public/js/DataTables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css" />
+</head>
+
+<body>
+
+	<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+		<a class="navbar-brand" href="#">My app</a>
+		<button class="navbar-toggler" type="button" data-toggle="collapse"
+			data-target="#navbarsExampleDefault"
+			aria-controls="navbarsExampleDefault" aria-expanded="false"
+			aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+		<div class="collapse navbar-collapse" id="navbarsExampleDefault">
+			<ul class="navbar-nav mr-auto">
+				<li class="nav-item active"><a class="nav-link" href="#">Accueil
+						<span class="sr-only">(current)</span>
+				</a></li>
+			</ul>
+		</div>
+	</nav>
+
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+				<h1>Liste des articles</h1>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12" id="BLOCK_MSG">
+				
+			</div>
+		</div>
+		<div class="row">
+			
+			<div class="col-md-12">
+				<div class="table-responsive">
+					<div class="col-md-12">
+						<button style="margin-bottom:10px;" type="button" id="add_button" data-toggle="modal"
+							data-target="#postModal"
+							class="btn btn-primary btn-sm">Ajouter un
+							article</button>
+
+
+					</div>
+					<table id="post_data" class="table table-bordered table-striped">
+						<thead>
+							<tr>
+								<th scope="col">#</th>
+								<th scope="col">Titre</th>
+								<th scope="col">Date création</th>
+								<th scope="col">Etat</th>
+								<th scope="col">Actions</th>
+							</tr>
+						</thead>
+						<tbody>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+	</div>
+	<!-- /.container -->
+
+	<div id="postModal" class="modal" tabindex="-1" role="dialog">
+		<div class="modal-dialog" role="document">
+			<form method="post" id="post_form" enctype="multipart/form-data">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">Ajouter un article</h5>
+						<button type="button" class="close" data-dismiss="modal"
+							aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<label for="title">Titre : </label> <input type="text" name="TITLE_POST" id="id_title"
+								class="form-control" id="title">
+						</div>
+						<div class="form-group">
+							<label for="content">Contenu :</label>
+							<textarea name="CONTENT_POST" class="form-control" id="id_content" rows="3"></textarea>
+						</div>
+						<div class="form-check">
+							<input name="PUBLISHED_POST" class="form-check-input" type="checkbox" value="1" id="id_published"
+								id="defaultCheck1"> <label class="form-check-label"
+								for="defaultCheck1"> Publié </label>
+						</div>
+					</div>
+					<div class="modal-footer">
+					 <input type="hidden" name="ID_POST" id="post_id" value="0" />
+						<input type="hidden" name="operation" id="operation" />
+						<input type="submit" name="action" id="action" class="btn btn-primary" value="Enregistrer">
+						<button type="button" class="btn btn-secondary"
+							data-dismiss="modal">Fermer</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+
+
+	<!-- Bootstrap core JavaScript
+    ================================================== -->
+	<!-- Placed at the end of the document so the pages load faster -->
+	<script src="public/js/jquery/2.2.0/jquery.min.js"></script>
+	<script
+		src="public/js/DataTables/DataTables-1.10.16/js/jquery.dataTables.min.js"></script>
+	<script
+		src="public/js/DataTables/DataTables-1.10.16/js/dataTables.bootstrap4.min.js"></script>
+	<script src="public/bootstrap/js/bootstrap.min.js"></script>
+
+	<script type="text/javascript">
+		$(document).ready(function() {
+			
+			$('#add_button').click(function(){
+				  $('#post_form')[0].reset();
+				  $('.modal-title').text("Ajouter un article");
+				  $('#action').val("Enregistrer");
+				  $('#operation').val("Add");
+				 });
+			
+			var dataTable = $('#post_data').DataTable({
+				"processing" : true,
+				"serverSide" : true,
+				"order" : [],
+				"ajax" : {
+					url : "api/fetch.php",
+					type : "POST"
+				},
+				"columnDefs" : [ {
+					"targets" : [ 0, 3, 4 ],
+					"orderable" : false,
+				}, ],
+			});
+			
+			
+			 $(document).on('submit', '#post_form', function(event){
+				  event.preventDefault();
+				  var titlePost = $('#id_title').val();
+				  var contentPost = $('#id_content').val();
+
+				  if(titlePost != '' && contentPost != '')
+				  {
+				   $.ajax({
+				    url:"api/insert.php",
+				    method:'POST',
+				    data:new FormData(this),
+				    contentType:false,
+				    processData:false,
+				    dataType:"json",
+				    success:function(data)
+				    {
+				     //alert(data);
+				     if(data.success==true){
+				    	 $('#BLOCK_MSG').html('<div class="alert alert-success">Succès</div>');
+				     }else{
+				    	 $('#BLOCK_MSG').html('<div class="alert alert-danger">Erreur</div>');
+				     }
+				    	 
+				     $('#post_form')[0].reset();
+				     $('#postModal').modal('hide');
+				     dataTable.ajax.reload();
+				    }
+				   });
+				  }
+				  else
+				  {
+				   alert("Both Fields are Required");
+				  }
+				 });
+			 
+			 $(document).on('click', '.update', function(){
+				  var post_id = $(this).attr("id");
+				  //alert(post_id);
+				  $.ajax({
+				   url:"api/fetch_single.php",
+				   method:"POST",
+				   data:{post_id:post_id},
+				   dataType:"json",
+				   success:function(data)
+				   {
+				    $('#postModal').modal('show');
+				    
+		
+				    $('#id_title').val(data.title);
+				    $('#id_content').val(data.content);
+				    if(data.published==1){
+				    	$('#id_published').prop('checked', true);
+				    }else{
+				    	$('#id_published').prop('checked', false);
+				    }
+				    $('.modal-title').text("Edition article");
+				    $('#post_id').val(post_id);
+				    
+				    $('#action').val("Editer");
+				    $('#operation').val("Edit");
+				   }
+				  })
+				 });
+			 
+			 $(document).on('click', '.delete', function(){
+				  var post_id = $(this).attr("id");
+				  if(confirm("Voulez-vous vraiment supprimer la ligne?"))
+				  {
+				   $.ajax({
+				    url:"api/delete.php",
+				    method:"POST",
+				    data:{post_id:post_id},
+				    dataType:"json",
+				    success:function(data)
+				    {
+				    //alert(data);
+				    	if(data.success==true){
+					    	 $('#BLOCK_MSG').html('<div class="alert alert-success">Succès</div>');
+					     }else{
+					    	 $('#BLOCK_MSG').html('<div class="alert alert-danger">Erreur</div>');
+					     }
+				     dataTable.ajax.reload();
+				    }
+				   });
+				  }
+				  else
+				  {
+				   return false; 
+				  }
+				 });
+			
+			
+		});
+	</script>
+</body>
+</html>
